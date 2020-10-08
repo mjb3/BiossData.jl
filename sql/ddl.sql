@@ -80,3 +80,20 @@ CREATE TABLE lad_population_age (
 CREATE INDEX idx_lp_age ON lad_population_age(lad19cd);
 CREATE INDEX idx_sm_laua ON spatial_map(laua);
 
+-- weekly deaths
+CREATE TABLE weekly_deaths (
+	v4_0	INTEGER,
+	calendar_years	INTEGER,
+	time	INTEGER,
+	admin_geography	TEXT,
+	geography	TEXT,
+	week_number	TEXT,
+	week	TEXT,
+	cause_of_death	TEXT,
+	causeofdeath	TEXT,
+	place_of_death	TEXT,
+	placeofdeath	TEXT,
+	registration_or_occurrence	TEXT,
+	registrationoroccurrence	TEXT
+);
+
