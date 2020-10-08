@@ -1,12 +1,12 @@
 # Population data
 This repo contains:
 
-- A database with population densities, ready to query.
+- A SQLite database with population densities, ready to query.
 - SQLite commands and DDL scripts for initialising the database from scratch for reference.
-- Julia examples (WIP - more to come)
+- Julia code for fetching some data (see examples folder)
 - Sample queries (see the SQL folder)
 
-## db/chrisbits.db
+## Database: db/chrisbits.db
 ### Tables
 - `spatial_map_sm`  various different geographical groupings
 - `areadata_gender` population density by LAD / gender
