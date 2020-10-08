@@ -11,6 +11,7 @@ This repo contains:
 - `spatial_map_sm`  various different geographical groupings
 - `areadata_gender` population density by LAD / gender
 - `areadata_age`    population density by LAD / age (year)
+- `weekly_deaths`   deaths by LAD / cause / location, etc
 
 ### Using the database
 SQLite databases are files. One way to access them is by using the command line tool. Open a terminal and `cd` to the database directory, then run:
