@@ -1,0 +1,14 @@
+# import
+.open chrisbits.db
+.mode csv
+.headers on
+.import NSPL_FEB_2019_UK.csv spatial_map_stg
+.import areadata_gender.csv lad_population_gender
+.import areadata_age.csv lad_population_age
+
+# useful
+.schema test
+
+# in case db locked
+mv vnone.db temp.db
+cp temp.db vnone.db
