@@ -6,6 +6,7 @@
 .import areadata_gender.csv lad_population_gender
 .import areadata_age.csv lad_population_age
 .import weekly-deaths-local-authority-time-series-v24.csv weekly_deaths
+.import week_key.csv week_key
 
 # useful
 .schema test

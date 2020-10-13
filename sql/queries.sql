@@ -13,8 +13,9 @@ INNER JOIN (SELECT DISTINCT laua, hlthau FROM spatial_map_sm) m ON(a.lad19cd = m
 GROUP BY hlthau, age
 
 -- weekly COVID deaths by HA / week
-SELECT hlthau, week, SUM(v4_0) as val
+SELECT hlthau, k.Week, k.WC, SUM(v4_0) as val
 FROM weekly_deaths w
+INNER JOIN week_key k ON(w.week = k.Week)
 INNER JOIN (SELECT DISTINCT laua, hlthau FROM spatial_map_sm) m ON(w.admin_geography = m.laua)
 WHERE cause_of_death = 'covid-19'
-GROUP BY hlthau, week
+GROUP BY hlthau, w.week
