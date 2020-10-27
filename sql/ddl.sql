@@ -96,4 +96,3 @@ CREATE TABLE weekly_deaths (
 	registration_or_occurrence	TEXT,
 	registrationoroccurrence	TEXT
 );
-
