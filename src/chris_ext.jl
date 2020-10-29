@@ -20,11 +20,12 @@ function fetch_population_data(db, clm_area::String)
     fpath = string(OUT_PATH, "area_population_by_", clm_area, "2.txt")
 
     ## SQL area mapping
-    sql_map = string("INNER JOIN (SELECT DISTINCT ", SQL_MAP_LADCOL, " AS lad, ", clm_area, " as area FROM ", SQL_MAP_TABLE, ") m ON(g.lad19cd = m.lad)")
+    sql_map = string("\nINNER JOIN (SELECT DISTINCT ", SQL_MAP_LADCOL, " AS lad, ", clm_area, " as area FROM ", SQL_MAP_TABLE, ") m ON(g.lad19cd = m.lad)")
 
     ## by gender
-    sql_base = ", SUM(g.Male) as male, SUM(g.Female) as female\nFROM lad_population_gender g\n"
-    sql = string("SELECT m.area", sql_base, sql_map, "\nGROUP BY m.area")
+    sql_base = ", SUM(g.Male) as male, SUM(g.Female) as female, sum(s.AREAEHECT) as area_hec\nFROM lad_population_gender g\n"
+    sql_sam = "INNER JOIN sam_lad s ON(g.lad19cd = s.LAD18CD)"
+    sql = string("SELECT m.area", sql_base, sql_sam, sql_map, "\nGROUP BY m.area")
     println("Running SQL:\n", sql)
     # run query
     r1 = SQLite.DBInterface.execute(db, sql) |> DataFrames.DataFrame
@@ -53,7 +54,7 @@ function fetch_population_data(db, clm_area::String)
             area = row[:area]
             male::Int64 = row[:male]
             female::Int64 = row[:female]
-            write(f, "\n$(area)\tna\tna\tna\t$(area)\t$(male + female)\t$(male)\t$(female)")
+            write(f, "\n$(area)\tna\tna\tna\t$(area)\t$((male+female)/row[:area_hec])\t$(male)\t$(female)")
             # by age
             aa = fetch_by_age(area)
             for row2 in eachrow(aa)
@@ -66,8 +67,11 @@ function fetch_population_data(db, clm_area::String)
 end
 
 ## weekly deaths
-function fetch_deaths_data(db, clm_area::String, in_hospital::Bool)
-    fpath = string(OUT_PATH, "covid_", in_hospital ? "" : "non", "h_deaths_weekly_by_", clm_area, ".txt")
+function fetch_deaths_data(db, clm_area::String, in_hospital::Int64)# 1: all; 2: hospital; 3: non hospital
+    fp_hosp = ["all", "hospital", "non_hospital"]
+    sql_hosp = ["", "AND place_of_death='hospital'", "AND place_of_death!='hospital'"]
+
+    fpath = string(OUT_PATH, "covid_", fp_hosp[in_hospital], "_deaths_weekly_by_", clm_area, ".txt")
     ## get areas
     ar_sql = string("SELECT DISTINCT ", clm_area, " as area FROM ", SQL_MAP_TABLE, " WHERE ", clm_area, "!=''")
     ars = SQLite.DBInterface.execute(db, string(ar_sql, " ORDER BY area")) |> DataFrames.DataFrame
@@ -77,7 +81,7 @@ function fetch_deaths_data(db, clm_area::String, in_hospital::Bool)
     function fetch_deaths_by_week(wc::String)
         base_sql = string("SELECT a.area, SUM(w.val) as val\nFROM (", ar_sql, ") a")
         map_sql = string("\nINNER JOIN (SELECT DISTINCT ", SQL_MAP_LADCOL, " as lad, ", clm_area, " AS area FROM ", SQL_MAP_TABLE, ") m ON(a.area = m.area)")
-        wd_sql = string("\nLEFT OUTER JOIN weekly_deaths_view w ON(w.admin_geography = m.lad AND cause_of_death = 'covid-19' AND place_of_death", in_hospital ? "" : "!", "='hospital' AND WC = ?)")
+        wd_sql = string("\nLEFT OUTER JOIN weekly_deaths_view w ON(w.admin_geography = m.lad AND cause_of_death = 'covid-19'", sql_hosp[in_hospital], " AND WC = ?)")
         sql = string(base_sql, map_sql, wd_sql, "\nWHERE a.area != '' GROUP BY a.area ORDER BY a.area")
         # println(sql)
         wd = SQLite.DBInterface.execute(db, sql, (wc, )) |> DataFrames.DataFrame
@@ -112,7 +116,7 @@ function fetch_cases_data(db, clm_area::String)
     ar_sql = string("SELECT DISTINCT ", clm_area, " as area FROM ", SQL_MAP_TABLE, " WHERE ", clm_area, "!=''")
     ars = SQLite.DBInterface.execute(db, string(ar_sql, " ORDER BY area")) |> DataFrames.DataFrame
     ## get dates    ### DIFF*
-    dts = SQLite.DBInterface.execute(db, "SELECT DISTINCT sp_date FROM daily_cases") |> DataFrames.DataFrame # WHERE areaType=?
+    dts = SQLite.DBInterface.execute(db, "SELECT DISTINCT sp_date FROM daily_cases ORDER BY sp_date") |> DataFrames.DataFrame # WHERE areaType=?
     ## get wd
     function fetch_cases_by_day(dt::String)
         base_sql = string("SELECT a.area, SUM(d.val) as val\nFROM (", ar_sql, ") a")
@@ -146,8 +150,9 @@ end
 function run_batch(clm_area::String)
     db = SQLite.DB(DB_PATH)     # connect to db
     fetch_population_data(db, clm_area)
-    fetch_deaths_data(db, clm_area, true)
-    fetch_deaths_data(db, clm_area, false)
+    fetch_deaths_data(db, clm_area, 1)
+    fetch_deaths_data(db, clm_area, 2)
+    fetch_deaths_data(db, clm_area, 3)
     fetch_cases_data(db, clm_area)
     println(" - finished.")
 end

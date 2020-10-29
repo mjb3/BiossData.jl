@@ -1,3 +1,12 @@
+
+-- load from staging tables
+INSERT INTO sam_lad SELECT * FROM sam_lad_stg;
+
+-- load cases data from staging
+INSERT INTO daily_cases(areaCode, areaName, areaType, sp_date, unassigned, age60_plus, age0_59)
+SELECT areaCode, areaName, areaType, date, unassigned, "60+", "0_59"
+FROM daily_cases_stg
+
 -- fix commas in population data
 UPDATE lad_population_gender
 SET male = replace(male,',',''), female = replace(female,',','');
@@ -16,11 +25,6 @@ SELECT w.week, k.WC, w.admin_geography, w.geography
 FROM weekly_deaths w
 INNER JOIN week_key_view k ON(w.week = k.Week)
 WHERE w.registration_or_occurrence='occurrences'
-
--- load cases data from staging
-INSERT INTO daily_cases(areaCode, areaName, areaType, sp_date, unassigned, age60_plus, age0_59)
-SELECT areaCode, areaName, areaType, date, unassigned, "60+", "0_59"
-FROM daily_cases_stg
 
 -- ad hoc mapping for ENGLAND ONLY based on weekly cases data
 -- NB. ADJUST FOR NULL LADs? fixed directly in query for now

@@ -9,6 +9,7 @@
 .import MSOAs_latest.csv weekly_cases_stg
 .import specimen_date-latest.csv daily_cases_stg
 .import week_key.csv week_key
+.import SAM_LAD_DEC_2018_UK.csv sam_lad_stg
 
 # useful
 .schema test
