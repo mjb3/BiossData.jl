@@ -96,3 +96,14 @@ CREATE TABLE weekly_deaths (
 	registration_or_occurrence	TEXT,
 	registrationoroccurrence	TEXT
 );
+
+-- daily case data (specimen_date)
+CREATE TABLE daily_cases (
+	areaCode	TEXT,
+	areaName	TEXT,
+	areaType	TEXT,
+	sp_date	TEXT,
+	unassigned	INTEGER,
+	age60_plus	INTEGER,
+	age0_59	INTEGER
+);
