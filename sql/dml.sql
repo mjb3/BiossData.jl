@@ -9,7 +9,8 @@ FROM daily_cases_stg
 
 -- fix commas in population data
 UPDATE lad_population_gender
-SET male = replace(male,',',''), female = replace(female,',','');
+SET male = replace(male,',',''), female = replace(female,',','')
+, bng_e = replace(bng_e,',',''), bng_n = replace(bng_n,',','');
 
 -- run AFTER import
 CREATE VIEW week_key_view AS

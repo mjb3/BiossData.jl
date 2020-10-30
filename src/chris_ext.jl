@@ -23,7 +23,7 @@ function fetch_population_data(db, clm_area::String)
     sql_map = string("\nINNER JOIN (SELECT DISTINCT ", SQL_MAP_LADCOL, " AS lad, ", clm_area, " as area FROM ", SQL_MAP_TABLE, ") m ON(g.lad19cd = m.lad)")
 
     ## by gender
-    sql_base = ", SUM(g.Male) as male, SUM(g.Female) as female, sum(s.AREAEHECT) as area_hec\nFROM lad_population_gender g\n"
+    sql_base = ", SUM(g.Male) as male, SUM(g.Female) as female, sum(s.AREALHECT) as area_hec\n, SUM(g.bng_e * s.AREALHECT) / SUM(s.AREALHECT) AS bng_e\n, SUM(g.bng_n * s.AREALHECT) / SUM(s.AREALHECT) AS bng_n\nFROM lad_population_gender g\n"
     sql_sam = "INNER JOIN sam_lad s ON(g.lad19cd = s.LAD18CD)"
     sql = string("SELECT m.area", sql_base, sql_sam, sql_map, "\nGROUP BY m.area")
     println("Running SQL:\n", sql)
@@ -54,7 +54,7 @@ function fetch_population_data(db, clm_area::String)
             area = row[:area]
             male::Int64 = row[:male]
             female::Int64 = row[:female]
-            write(f, "\n$(area)\tna\tna\tna\t$(area)\t$((male+female)/row[:area_hec])\t$(male)\t$(female)")
+            write(f, "\n$(area)\tna\t$(row[:bng_e])\t$(row[:bng_n])\t$(area)\t$((male+female)/row[:area_hec])\t$(male)\t$(female)")
             # by age
             aa = fetch_by_age(area)
             for row2 in eachrow(aa)
